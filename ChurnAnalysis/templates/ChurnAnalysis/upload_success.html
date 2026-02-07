@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Success</title>
+</head>
+<body>
+
+<h2>Dataset Uploaded Successfully</h2>
+
+<p><strong>File name:</strong> {{ file_name }}</p>
+<p><strong>File path:</strong> {{ file_path }}</p>
+
+<a href="{% url 'upload_dataset' %}">Upload another dataset</a>
+
+</body>
+</html>

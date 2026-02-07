@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+.page-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* LEFT PANEL */
+.left-panel {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.left-panel button {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background-color: #4f46e5;
+    color: white;
+}
+
+/* RIGHT PANEL */
+.dataset-block {
+    width: 50%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #c3edf5;
+}
+
+.dataset-text {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+.file_name-text{
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+.file_path-text{
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+</style>
+
+</head>
+<body>
+    <div class="page-container">
+
+    <!-- LEFT SIDE: BUTTONS -->
+    <div class="left-panel">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_dataset' %}">
+            {% csrf_token %}
+            <input type="file" name="dataset" accept=".csv" required>
+            <br><br>
+            <button type="submit">Upload Dataset</button>
+        
+
+        
+
+        </form>
+        <button id="processing_btn" name="processing_btn" >Preprocessing...</button>
+        <button>Train Model</button>
+        <button>Predict</button>
+    </div>
+
+    <!-- RIGHT SIDE: DATASET BLOCK -->
+    {% if file_name %}
+    <div  class="dataset-block">
+        <div id = "result">
+        <h3>Dataset Details</h3>
+        <p class= "file_name-text">
+            <strong>File name:</strong> {{ file_name }}</p>
+        <p class="file_path-text">
+            <strong>File path:</strong> {{ file_path }}</p>
+        <p class="dataset-text">
+            <strong>Dataset:</strong> {{ toplist }}
+        </p>
+        </div>
+        <div>
+            
+            <div id="prepro" style="visibility: hidden;">
+                
+                    <img src="{% static plot %}" />
+               
+            </div>
+
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+
+<script>
+document.getElementById("processing_btn").addEventListener("click", function () {
+    fetch("{% url 'upload_dataset' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        },
+       body: JSON.stringify({
+            action: "processing_btn"
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("prepro").style.visibility = "visible";
+        document.getElementById("result").style.visibility = "hidden";
+        const container = document.getElementById("prepro");
+        container.innerHTML = "";   // clear old images
+
+        // render images dynamically
+        data.plots.forEach(plot => {
+            console.log(plot)
+            const img = document.createElement("img");
+            img.src = `/static/${plot}`;
+            img.style.width = "300px";
+            img.style.margin = "10px";
+            container.appendChild(img);
+        });
+ 
+    });
+});
+</script>
+</html>
