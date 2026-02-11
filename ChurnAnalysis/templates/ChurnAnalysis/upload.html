@@ -54,6 +54,7 @@
     word-wrap: break-word;
     overflow-wrap: anywhere;
 }
+
 </style>
 
 </head>
@@ -61,51 +62,56 @@
     <div class="page-container">
 
     <!-- LEFT SIDE: BUTTONS -->
-    <div class="left-panel">
-        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_dataset' %}">
-            {% csrf_token %}
-            <input type="file" name="dataset" accept=".csv" required>
-            <br><br>
-            <button type="submit">Upload Dataset</button>
-        
-
-        
-
-        </form>
-        <button id="processing_btn" name="processing_btn" >Preprocessing...</button>
-        <button>Train Model</button>
-        <button>Predict</button>
-    </div>
+        <div class="left-panel">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'upload_dataset' %}">
+                {% csrf_token %}
+                <input type="file" name="dataset" accept=".csv" required>
+                <br><br>
+                <button type="submit">Upload Dataset</button>
+            </form>
+            <button id="processing_btn" name="processing_btn" >Preprocessing...</button>
+            <button id="eda_btn" name="eda_btn">EDA</button>
+            <button>Predict</button>
+        </div>
 
     <!-- RIGHT SIDE: DATASET BLOCK -->
     {% if file_name %}
-    <div  class="dataset-block">
-        <div id = "result">
-        <h3>Dataset Details</h3>
-        <p class= "file_name-text">
-            <strong>File name:</strong> {{ file_name }}</p>
-        <p class="file_path-text">
-            <strong>File path:</strong> {{ file_path }}</p>
-        <p class="dataset-text">
-            <strong>Dataset:</strong> {{ toplist }}
-        </p>
-        </div>
-        <div>
-            
-            <div id="prepro" style="visibility: hidden;">
+        <div  class="dataset-block" >
+            <div>
+                <div id = "result" style="display: block;">
+                    <h3>Dataset Details</h3>
+                    <p class= "file_name-text">
+                        <strong>File name:</strong> {{ file_name }}</p>
+                    <p class="file_path-text">
+                        <strong>File path:</strong> {{ file_path }}</p>
+                    <p class="dataset-text">
+                        <strong>Dataset:</strong> {{ toplist }}
+                    </p>
+                    <p><strong>Status:</strong> {{ Success_msg }}</p>
+                </div>
                 
-                    <img src="{% static plot %}" />
-               
+                <div>
+                    <div id="prepro" style="display: block;">
+                        
+                            <!--<img src="{% static 'ChurnAnalysis' %}" />-->
+                    
+                    </div>
+
+                    <div id="eda_btn_click" style="display: block;">
+
+                        <!--- <img src="{% static 'ChurnAnalysis' %}"/>-->
+
+                    </div>
+                </div>
             </div>
-
-
-        </div>
+         </div>
     </div>
     {% endif %}
 
 </div>
 
 </body>
+
 
 <script>
 document.getElementById("processing_btn").addEventListener("click", function () {
@@ -121,8 +127,8 @@ document.getElementById("processing_btn").addEventListener("click", function () 
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById("prepro").style.visibility = "visible";
-        document.getElementById("result").style.visibility = "hidden";
+        document.getElementById("prepro").style.display = "block";
+        document.getElementById("result").style.display = "none";
         const container = document.getElementById("prepro");
         container.innerHTML = "";   // clear old images
 
@@ -138,5 +144,36 @@ document.getElementById("processing_btn").addEventListener("click", function () 
  
     });
 });
+</script>
+<script>
+    document.getElementById("eda_btn").addEventListener("click", function () {
+        fetch("{% url 'upload_dataset' %}",{
+            method:"POST",
+            headers:{
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action: "eda_btn"
+            })
+        })
+
+        .then(response => response.json())
+        .then(data2 => {
+            document.getElementById("eda_btn_click").style.display="block";
+            document.getElementById("result").style.display="none";
+            document.getElementById("prepro").style.display="none";
+            const container = document.getElementById("eda_btn_click");
+            container.innerHTML="";
+
+            data2.plots.forEach(plot => {
+                const img= document.createElement("img");
+                img.src = `/static/${plot}`;
+                img.style.width = "300px";
+                img.style.margin = "10px";
+                container.appendChild(img);
+            });
+        });
+    } );
 </script>
 </html>
